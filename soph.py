@@ -1,6 +1,14 @@
 from paho.mqtt import client as mqtt
 from flask import Flask, send_file
 
+#TODO: 
+#- -create app routes for seperate webpage for camming lights
+#       create buttons/update file locations
+# --create app routes for main LED pattern, main LED brightness
+#-- create html webpage for main LED button/create buttons
+
+
+
 #port gets set in the service not the py
 
 #start the MQTT client and stay connected
