@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+ <style>
+    html, body { margin:0; height:100%; background:#0b0b0b; }
+    .screen { width:480px; height:800px; margin:0 auto; padding:12px; box-sizing:border-box; }
+    @media (max-width:480px), (max-height:800px) { .screen { width:100vw; height:100vh; } }
+
+    .btn {
+	background-color:orange;
+	width:160px;
+	height:160px;
+	font-size:60pt;
+	font-weight:bold;
+	font-family:courier;
+	}
+    .btn:active {
+	background-color:red;
+	}
+</style>
+<button class="btn" id="tenpercent">10%</button>
+<button class="btn" id="twentypercent">20%</button><br>4
+<button class="btn" id="fiftypercent">50%</button>
+<button class="btn" id="seventypercent">70%</button><br>
+<button class="btn" id="hundredpercent">100<br>%</button>
+
+<button class="btn" id="backbutton">BACK</button>
+
+<script>
+
+function setBrightness(val) {
+    fetch("/api/brightness/" + val, { method: "POST" });
+}
+
+document.getElementById("tenpercent").onclick = () => setBrightness(10);
+
+document.getElementById("twentypercent").onclick    = () => setBrightness(40);
+
+document.getElementById("fiftypercent").onclick   = () => setBrightness(127);
+
+document.getElementById("seventypercent").onclick = () => setBrightness(170);
+
+document.getElementById("hundredpercent").onclick = () => setBrightness(250);
+
+document.getElementById("backbutton").onclick = () => {window.location.href = "/"};
+</script>
+
+
+</head>
+</html>
+

@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=480, initial-scale=1">
+  <style>
+    html, body {
+      margin: 0;
+      background: #00023d;
+      width: 480px;
+      height: 800px; /* viewport */
+      overflow-x: hidden;
+      overflow-y: scroll;
+      font-family: sans-serif;
+      
+    }
+    
+    ::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+    /* one long page */
+    #page {
+      width: 480px;
+      height: 1600px;
+    }
+
+    .screen {
+      width: 480px;
+      height: 800px;
+    }
+
+    /* CLOCK (top screen) */
+    #clock {
+      display: grid;
+      grid-template-columns: 240px 240px;
+      grid-template-rows: 400px 400px;
+    }
+    #clock img {
+      width: 240px;
+      height: 400px;
+      display: block;
+    }
+
+    /* BLOBS (bottom screen) */
+    #blobs svg {
+      width: 480px;
+      height: 800px;
+      display: block;
+      touch-action: manipulation;
+    }
+    .btn { cursor: pointer;
+	 }
+ 
+
+    #brightnessButton {
+      fill:yellow;
+    }
+
+    #rainbowButton {
+	fill:green;
+	}
+    #offButton {
+	fill:red;
+	}
+    #whiteButton {
+	fill:orange;
+	}
+
+
+  </style>
+</head>
+<body>
+
+<div id="page">
+
+  <!-- TOP: CLOCK -->
+  <div class="screen" id="clock">
+    <img id="h1"><img id="h2">
+    <img id="m1"><img id="m2">
+  </div>
+
+  <!-- BOTTOM: BLOB BUTTONS -->
+  <div class="screen" id="blobs">
+    <svg viewBox="0 0 480 800">
+
+      <!-- paste your 4 paths here (same as before) -->
+      <path class="btn" id="brightnessButton"  d="M 29.986305,395.44439 C 23.435473,325.51542 44.730554,253.00774 18.552539,185.22314 8.2603776,138.47053 -1.2619704,81.743816 30.0275,40.881841 59.867139,5.5190705 125.70419,6.6704175 145.18292,52.400261 c 19.05854,61.112219 36.70754,123.939369 34.92986,188.643149 -2.94958,63.8005 1.93786,132.47108 -28.66895,190.57661 -26.9164,37.96279 -92.565821,55.49354 -123.14846,12.12069 C 5.8401971,420.87079 2.4189074,382.66197 30.923377,362.64687" />
+
+      <path class="btn" id="rainbowButton"       d="m 226.77143,45.916529 c 59.16594,-1.546483 120.26866,-8.012337 177.60496,9.977181 45.70296,18.29993 49.53211,75.33194 60.78198,116.70823 3.97057,49.86889 -7.43662,98.44803 -19.14413,146.39297 -7.67597,41.06445 -17.92126,95.89916 -61.794,111.83528 -44.33925,9.61887 -72.96464,-38.86469 -79.55213,-76.33507 -20.65536,-54.92159 -11.87951,-113.51331 -15.16928,-170.60258 3.87544,-64.72088 -83.72486,-46.7716 -102.76778,-97.110322 -12.10682,-37.307303 53.5253,-52.666152 73.77497,-28.683753" />
+
+      <path class="btn" id="offButton"         d="m 212.71535,246.44994 c -4.80098,45.90701 7.75869,91.90948 0.13339,137.93705 -5.39306,35.54414 -1.03534,82.58647 -40.26522,100.14374 -31.76489,22.58166 -69.87574,19.0983 -106.503748,20.90295 -45.536532,0.97328 -34.795001,55.52777 -43.278373,86.23515 -12.504904,48.2205 -1.939743,99.78827 10.512865,146.86319 20.993265,39.18116 71.600926,43.54567 111.042776,41.56862 43.42305,-5.40362 67.66162,-49.19833 67.66219,-89.78324 13.41132,-55.30843 24.89849,-111.23223 30.96922,-167.95476 11.60374,-53.54493 -4.84265,-107.70697 0.84897,-161.41165 -10.00875,-50.06212 -1.05691,-99.37132 3.93895,-149.14506 4.34246,-44.53837 -49.79569,-42.24756 -38.80931,1.84649 0.82874,23.11792 -0.46828,46.36088 2.81122,69.34333" />
+
+      <path class="btn" id="whiteButton"       d="m 309.23377,491.02574 c -31.75399,34.45896 -4.42166,95.07083 -25.25486,139.03746 -9.73006,42.51173 -43.95556,81.38089 -35.95851,126.72021 27.75424,39.89859 86.69135,18.81638 127.99699,19.56926 40.69569,-0.24604 68.73362,-42.97081 60.0851,-81.18167 3.91345,-59.74546 9.25387,-122.39054 1.93162,-183.764 -4.05938,-45.83192 -57.06188,-35.9579 -88.10522,-47.78612 -34.4405,-20.55851 -76.71833,0.29929 -58.47509,42.02573 -0.20702,8.95907 0.41402,19.1384 7.47217,25.67323" />
+
+    </svg>
+  </div>
+
+</div>
+
+<script>
+  // --- CLOCK GIF MAP (files in same folder as this HTML) ---
+  const gifs = {
+    "0": "/static/zero.gif",
+    "1": "/static/one.gif",
+    "2": "/static/two.gif",
+    "3": "/static/three.gif",
+    "4": "/static/four.gif",
+    "5": "/static/five.gif",
+    "6": "/static/six.gif",
+    "7": "/static/seven.gif",
+    "8": "/static/eight.gif",
+    "9": "/static/nine.gif",
+  };
+
+  const el = {
+    h1: document.getElementById("h1"),
+    h2: document.getElementById("h2"),
+    m1: document.getElementById("m1"),
+    m2: document.getElementById("m2"),
+  };
+
+  let last = "";
+
+  function updateClock() {
+    const now = new Date();
+
+    let hour = now.getHours();
+    if (hour === 0) hour = 12;
+    if (hour > 12) hour -= 12;
+
+    const hh = String(hour).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+
+    const cur = hh + mm;
+    if (cur === last) return;
+    last = cur;
+
+    el.h1.src = gifs[hh[0]];
+    el.h2.src = gifs[hh[1]];
+    el.m1.src = gifs[mm[0]];
+    el.m2.src = gifs[mm[1]];
+  }
+
+  updateClock();
+  setInterval(updateClock, 250);
+
+  // --- BLOB BUTTON TEST CLICKS ---
+  document.getElementById("brightnessButton").onclick = () => {window.location.href = "/brightness"};
+  document.getElementById("rainbowButton").onclick  = () => fetch("/api/pattern/rainbow", {method: "POST"});
+  document.getElementById("offButton").onclick        = () => fetch("/api/pattern/off", {method: "POST"});
+  document.getElementById("whiteButton").onclick       = () => fetch("/api/pattern/solidwhite", {method: "POST"});
+</script>
+
+</body>
+</html>
