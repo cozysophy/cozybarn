@@ -156,18 +156,14 @@ void loop() {
 
   ArduinoOTA.handle(); // OTA command neeed in loop
 
-    if (!client.connected()) { //PubSubClient reconnect
+  if (!client.connected()) { //PubSubClient reconnect
     reconnect();
   }
-  client.loop(); //PubSubClient loop
 
-//ChatGPT garbage
-//if (millis() - lastUpdate < 20) return;
-//lastUpdate = millis();
+  client.loop(); //PubSubClient loop
 
 
   switch (currentPattern) {  //Choose the LED pattern
-
     case PATTERN_OFF:
       fill_solid(strip1, NUM_LEDS_1,CRGB::Black);
       fill_solid(strip2, NUM_LEDS_2,CRGB::Black);
@@ -184,9 +180,6 @@ for (int i = 0; i < 4; i++) {
 }
 
 */
-
-
-
 
       break;
 
@@ -240,9 +233,9 @@ void whiteLEDstate(){
   //uint8_t whiteBalance = map(balanceRaw, 0, 4095, 110, 220);
 
   // Shift white between warm (more red) and cool (more blue).
-  uint8_t red = 160;
-  uint8_t green = 255;
-  uint8_t blue = 255 - 160;
+  uint8_t red = 255;
+  uint8_t green = 220;
+  uint8_t blue = 200;
 
   CRGB whiteColor = CRGB(red, green, blue);
 

@@ -107,6 +107,8 @@ void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(strip1, NUM_LEDS);
   FastLED.addLeds<WS2812B, DATA_PIN_2, GRB>(strip2, NUM_LEDS);
   
+  soph_rainbow();
+  FastLED.setBrightness(10);
 
   
   // delay for stability
@@ -132,7 +134,6 @@ void setup() {
   Serial.println(WiFi.localIP());
 
  // FastLED.setDither(0); probably unneeded, was trying to fix the flickering
-  FastLED.setBrightness(10);
  
 }
 
@@ -201,15 +202,15 @@ void camLights(const String& topic, const String& incomingMessage){
 
 void whiteLEDstate(){
   //int brightnessRaw = analogRead(BRIGHTNESS_POT_PIN);
-  int balanceRaw = analogRead(WHITE_BALANCE_POT_PIN);
+//  int balanceRaw = analogRead(WHITE_BALANCE_POT_PIN);
 
   //uint8_t brightness = map(brightnessRaw, 0, 4095, 0, 255);
-  uint8_t whiteBalance = map(balanceRaw, 0, 4095, 110, 220);
+ // uint8_t whiteBalance = map(balanceRaw, 0, 4095, 110, 220);
 
   // Shift white between warm (more red) and cool (more blue).
-  uint8_t red = whiteBalance;
-  uint8_t green = 255;
-  uint8_t blue = 255 - whiteBalance;
+  uint8_t red = 255;
+  uint8_t green = 240;
+  uint8_t blue = 230;
 
   CRGB whiteColor = CRGB(red, green, blue);
 
