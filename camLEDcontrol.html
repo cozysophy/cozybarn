@@ -1,0 +1,44 @@
+<!doctype HTML>
+<html>
+	<!-- HTML main cam LED page to choose pattern or brightness-->
+<head>
+ <style>
+    html, body { margin:0; height:100%; background:#0b0b0b; }
+    .screen { width:480px; height:800px; margin:0 auto; padding:12px; box-sizing:border-box; }
+    @media (max-width:480px), (max-height:800px) { .screen { width:100vw; height:100vh; } }
+
+    .btn {
+	background-color:blue;
+	width:460px;
+	height:160px;
+	font-size:60pt;
+	font-weight:bold;
+	font-family:courier;
+	}
+    .btn:active {
+	background-color:red;
+	}
+</style>
+</head>
+<body>
+
+<button class="btn" id="brightnessbutton">brightness</button>
+<br>
+<button class="btn" id="patternbutton">patterns</button>
+<br>
+<button class="btn" id="backbutton">back</button>
+
+
+<script>
+
+document.getElementById("brightnessbutton").onclick = () => {window.location.href = "/brightness"};
+
+document.getElementById("patternbutton").onclick = () => {window.location.href = "/campattern"};
+
+document.getElementById("backbutton").onclick = () => {window.location.href = "/LEDcontrolpage"};
+
+</script>
+
+
+</body>
+</html>

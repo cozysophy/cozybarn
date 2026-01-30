@@ -146,10 +146,8 @@
   setInterval(updateClock, 250);
 
   // --- BLOB BUTTON TEST CLICKS ---
-  document.getElementById("brightnessButton").onclick = () => {window.location.href = "/brightness"};
-  document.getElementById("rainbowButton").onclick  = () => fetch("/api/pattern/rainbow", {method: "POST"});
+  document.getElementById("rainbowButton").onclick  = () => {window.location.href = "/LEDcontrolpage"};
   document.getElementById("offButton").onclick        = () => fetch("/api/pattern/off", {method: "POST"});
-  document.getElementById("whiteButton").onclick       = () => fetch("/api/pattern/solidwhite", {method: "POST"});
 </script>
 
 </body>

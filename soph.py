@@ -21,9 +21,22 @@ client.loop_start() #keeps network flowing
 
 app = Flask(__name__)
 
-@app.route("/")
-def soph(name=None):
-	return send_file("/home/sophie/sophcode/haha.html")
+
+			#API CALLS
+@app.route("/api/main/pattern/rainbow", methods=['POST'])
+def rainbowmain():
+	client.publish("soph/main/pattern", "rainbow")
+	return "ok"
+
+@app.route("/api/mainbrightness/<valtwo>", methods=['POST'])
+def brightnessmain(valtwo):
+		client.publish("soph/main/brightness", valtwo)
+		return "ok"
+		
+@app.route("/api/main/pattern/solidwhite", methods=['POST'])
+def solidwhitemain():
+	client.publish("soph/pattern", "solidwhite")
+	return "ok"
 	
 @app.route("/api/pattern/rainbow", methods=['POST'])
 def rainbow():
@@ -33,6 +46,7 @@ def rainbow():
 @app.route("/api/pattern/off", methods=['POST'])
 def off():
 	client.publish("soph/pattern", "off")
+	client.publish("soph/main/pattern", "off")
 	return "ok"
 	
 @app.route("/api/pattern/solidwhite", methods=['POST'])
@@ -44,14 +58,42 @@ def solidwhite():
 def brightness(val):
 		client.publish("soph/brightness", val)
 		return "ok"
+		
+		#WEBPAGE ROUTING
+		#note: Flask always needs a definition under app.route
+
+@app.route("/")
+def soph(name=None):
+	return send_file("/home/sophie/sophcode/haha.html")
+	
+@app.route("/LEDcontrolpage")
+def LEDcontrolpage():
+	return send_file("/home/sophie/sophcode/LEDcontrolpage.html")
 
 @app.route("/brightness")
 def brightweb():
 		return send_file("/home/sophie/sophcode/brightness.html")
+		
+@app.route("/mainbrightness")
+def brightmain():
+	return send_file("/home/sophie/sophcode/mainbrightness.html")
+
+@app.route("/mainLEDcontrol")
+def mainLEDcontrol():
+	return send_file("/home/sophie/sophcode/mainLEDcontrol.html")
+
+@app.route("/mainpattern")
+def mainpattern():
+	return send_file("/home/sophie/sophcode/mainpattern.html")
+	
+@app.route("/camLEDcontrol")
+def camLEDcontrol():
+	return send_file("/home/sophie/sophcode/camLEDcontrol.html")
+	
+@app.route("/campattern")
+def campattern():
+	return send_file("/home/sophie/sophcode/campattern.html")
 	
 	
 if __name__ == "__main__":
 	app.run(host="10.42.0.1", port=800)
-
-
-#mqttc.loop_forever(retry_first_connection=False)
