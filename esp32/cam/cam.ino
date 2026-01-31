@@ -107,8 +107,9 @@ void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(strip1, NUM_LEDS);
   FastLED.addLeds<WS2812B, DATA_PIN_2, GRB>(strip2, NUM_LEDS);
   
-  soph_rainbow();
+  soph_rainbow(); //start initial pattern that doesn't depend on MQTT connectiveness 
   FastLED.setBrightness(10);
+  FastLED.show();
 
   
   // delay for stability

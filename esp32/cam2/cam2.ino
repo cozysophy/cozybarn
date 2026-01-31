@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
+#include <Preferences.h>
 
 //ESP32 runs two led strips, using OTA, and mqtt subscriber. The message gets
 //transcribed into a string, which gets delegated to its right purpose. It subscribes to brightness and pattern, 
@@ -23,6 +24,12 @@
 #define NUM_LEDS_3 80 //speaker
 #define NUM_LEDS_4 80 //speaker
 
+
+
+Preferences myBPref;
+#define RW_MODE false //pertaining to saving preferences on esp32
+#define RO_MODE true  //Read Only, or Read/Write
+uint8_t brightness;
 
 //Create Pattern Library
 //enum creates a list 0,1,2 etc. that you can call from strings
@@ -110,8 +117,10 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
 
 
-
 void setup() {
+  initializeBrightness(); //one-time sketch to set memeory value for brightness
+  loadBrightness();       //load in brightness value from memory
+
 
  //  currentPattern = PATTERN_RAINBOW; <-- for solving starting pattern issues, idk
   FastLED.addLeds<LED_TYPE, DATA_PIN_1, GRB>(strip1, NUM_LEDS_1);
@@ -120,10 +129,14 @@ void setup() {
   FastLED.addLeds<LED_TYPE, DATA_PIN_4, GRB>(strip4, NUM_LEDS_4);
 
 
-soph_rainbow();    //set initial pattern that doesnt rely on mqtt connection, helps
-                  //when the server isnt running and you just want some light
-FastLED.setBrightness(60); //set initial brightness
-  
+
+    fill_rainbow(strip1,NUM_LEDS_1,oneMore,10);
+    fill_rainbow(strip2,NUM_LEDS_2,oneMore,10);
+    fill_rainbow(strip3,NUM_LEDS_3,oneMore,10);
+    fill_rainbow(strip4,NUM_LEDS_4,oneMore,10);           
+     //set initial pattern that doesnt rely on mqtt connection, helps       
+     //when the server isnt running and you just want some light
+  FastLED.show();
 
   
   // delay for stability
@@ -205,9 +218,10 @@ for (int i = 0; i < 4; i++) {
 //note: const means read-only, String& means dont make a copy to use, just read the original, otherwise it would make a whole copy for this func to use
 void mainLights(const String& topic, const String& incomingMessage){ 
   if(topic=="soph/main/brightness"){
-    int brightness = incomingMessage.toInt(); //changes string number into actual number (value)
-                                              // ex. "43" vs 43
-    FastLED.setBrightness(brightness);     //change the brightness to new value
+    uint8_t b = incomingMessage.toInt(); //.toInt changes string number into actual number (value)
+  
+  saveBrightness(b); //send to saved memory
+        
   }
 
   else if (topic=="soph/main/pattern"){    //Pattern Mqtt selection
@@ -267,4 +281,53 @@ void soph_rainbow() {     //Rainbow Pattern
   oneMore++; 
 }
 
+
+
+//Creating a saved value (in this case for brightness), using NVS to store data 
+//on the ESP32. It requires a namespace (myBPref), and 'keys' that exist under it,
+//an example one being "myB"
+//more reading at: https://docs.espressif.com/projects/arduino-esp32/en/latest/tutorials/preferences.html
+
+void initializeBrightness() {
+  
+  myBPref.begin("myB", RO_MODE);     // Open our namespace (or create one)
+                                  // if it doesn't exist already
+
+  bool tpInit = myBPref.isKey("nvsInit");   //check if the key "myB" has been created
+                                      //and assign a bool variable to it (it will
+                                      //either come up true or false))
+// NVS is the name for the memory ESP32 uses. Its called "non-volitile memory"
+//but this is just creating a key thats sole purpose is to test if the initial
+//sketch has been run. 
+
+  if (tpInit == false) {              //if it hasn't
+    myBPref.end();    //end the RO_MODE, and 
+    myBPref.begin("myB", RW_MODE);    //start the RW_MODE
+
+    myBPref.putUChar("myB", 40);     //create a key I actually want (brightness)
+
+    myBPref.putBool("nvsInit", true);   //create the 'test key' and store the value 'true'
+                                      //(which would have been false)
+    myBPref.end(); //close the namespace in RW_MODE
+    myBPref.begin("myB",RO_MODE);
+    brightness = myBPref.getUChar("myB");
+    myBPref.end();
+  }
+  else {return;}
+}
+
+void loadBrightness() {
+  myBPref.begin("myB", RO_MODE);
+  brightness = myBPref.getUChar("myB");
+  myBPref.end();
+  FastLED.setBrightness(brightness);
+}
+
+void saveBrightness(uint8_t b) {
+  brightness = b;
+  FastLED.setBrightness(brightness); //set brightness
+  myBPref.begin("myB", RW_MODE);    //open namespace/key to Read/Write
+  myBPref.putUChar("myB", b);       //write to b value to memory 
+  myBPref.end();                    //close namespace
+}
 
