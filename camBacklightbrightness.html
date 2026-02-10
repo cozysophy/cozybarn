@@ -1,14 +1,13 @@
 <!doctype html>
 <html>
-<head> <!-- RIGHT NOW THIS CODE IS REDUNDENT AND UNUSED, BUT KEPT FOR FUTURE USE/TEMPLATE -->
-	<!-- HTML that controls main LED ESP32 brightness-->
+<head>
  <style>
     html, body { margin:0; height:100%; background:#0b0b0b; }
     .screen { width:480px; height:800px; margin:0 auto; padding:12px; box-sizing:border-box; }
     @media (max-width:480px), (max-height:800px) { .screen { width:100vw; height:100vh; } }
 
     .btn {
-	background-color:yellow;
+	background-color:purple;
 	width:160px;
 	height:160px;
 	font-size:60pt;
@@ -19,10 +18,10 @@
 	background-color:red;
 	}
 </style>
-</head>
-<body>
 <button class="btn" id="tenpercent">10%</button>
 <button class="btn" id="twentypercent">20%</button><br>
+<button class="btn" id="thirtypercent">30%</button><br>
+<button class="btn" id="fortypercent">40%</button><br>
 <button class="btn" id="fiftypercent">50%</button>
 <button class="btn" id="seventypercent">70%</button><br>
 <button class="btn" id="hundredpercent">100<br>%</button>
@@ -31,13 +30,17 @@
 
 <script>
 
-function setBrightness(valtwo) {
-    fetch("/api/mainbrightness/" + valtwo, { method: "POST" });
+function setBrightness(val) {
+    fetch("/api/cam/brightness/" + val, { method: "POST" });
 }
 
 document.getElementById("tenpercent").onclick = () => setBrightness(10);
 
 document.getElementById("twentypercent").onclick    = () => setBrightness(40);
+
+document.getElementById("thirtypercent").onclick    = () => setBrightness(77);
+
+document.getElementById("fortypercent").onclick    = () => setBrightness(102);
 
 document.getElementById("fiftypercent").onclick   = () => setBrightness(127);
 
@@ -45,10 +48,11 @@ document.getElementById("seventypercent").onclick = () => setBrightness(170);
 
 document.getElementById("hundredpercent").onclick = () => setBrightness(250);
 
-document.getElementById("backbutton").onclick = () => {window.location.href = "/mainLEDcontrol"};
+document.getElementById("backbutton").onclick = () => {window.location.href = "/camlightchoose"};
 </script>
 
 
-</body>
+</head>
 </html>
+
 

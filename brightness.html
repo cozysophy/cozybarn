@@ -19,7 +19,9 @@
 	}
 </style>
 <button class="btn" id="tenpercent">10%</button>
-<button class="btn" id="twentypercent">20%</button><br>4
+<button class="btn" id="twentypercent">20%</button><br>
+<button class="btn" id="thirtypercent">30%</button><br>
+<button class="btn" id="fortypercent">40%</button><br>
 <button class="btn" id="fiftypercent">50%</button>
 <button class="btn" id="seventypercent">70%</button><br>
 <button class="btn" id="hundredpercent">100<br>%</button>
@@ -36,13 +38,17 @@ document.getElementById("tenpercent").onclick = () => setBrightness(10);
 
 document.getElementById("twentypercent").onclick    = () => setBrightness(40);
 
+document.getElementById("thirtypercent").onclick    = () => setBrightness(77);
+
+document.getElementById("fortypercent").onclick    = () => setBrightness(102);
+
 document.getElementById("fiftypercent").onclick   = () => setBrightness(127);
 
 document.getElementById("seventypercent").onclick = () => setBrightness(170);
 
 document.getElementById("hundredpercent").onclick = () => setBrightness(250);
 
-document.getElementById("backbutton").onclick = () => {window.location.href = "/camLEDcontrol"};
+document.getElementById("backbutton").onclick = () => {window.location.href = "/camlightchoose"};
 </script>
 
 
