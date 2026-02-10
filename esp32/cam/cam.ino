@@ -10,8 +10,9 @@
 //and uses enum patterns to use switch cases for each pattern. Pubsubclient handles the mqtt, and 
 //ota is...ota
 
-
-//TODO: create switchcase to each pattern, test pattern rainbow on mqtt
+//setting variables for setting individual brightnesses, see brightness topics for MQTT 
+uint8_t mainBrightness = 10;
+uint8_t camBrightness = 10;
 
 
 //Create Pattern Library
@@ -71,6 +72,7 @@ void reconnect() {
       //subscriber topics
       client.subscribe("soph/brightness");  //***********SUBSCRIBER TOPICS**********************************
       client.subscribe("soph/pattern");
+      client.subscribe("soph/cam/brightness");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -103,9 +105,8 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 void setup() {
 
 
- //  currentPattern = PATTERN_RAINBOW; <-- for solving starting pattern issues, idk
-  FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(strip1, NUM_LEDS);
-  FastLED.addLeds<WS2812B, DATA_PIN_2, GRB>(strip2, NUM_LEDS);
+  FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(strip1, NUM_LEDS); //[0]  these two lines of code have to be in order for brightness to work properly
+  FastLED.addLeds<WS2812B, DATA_PIN_2, GRB>(strip2, NUM_LEDS); //[1]
   
   soph_rainbow(); //start initial pattern that doesn't depend on MQTT connectiveness 
   FastLED.setBrightness(10);
@@ -169,8 +170,9 @@ void loop() {
 
   }
 
-  FastLED.show();  //push the led pattern and light LED's
-  
+FastLED[0].showLeds(mainBrightness);
+FastLED[1].showLeds(camBrightness);
+
 }
 
 
@@ -181,9 +183,16 @@ void loop() {
 //note: const means read-only, String& means dont make a copy to use, just read the original, otherwise it would make a whole copy for this func to use
 void camLights(const String& topic, const String& incomingMessage){ 
   if(topic=="soph/brightness"){
-    int brightness = incomingMessage.toInt(); //changes string number into actual number (value)
+    int mbrightness = incomingMessage.toInt(); // .otInt changes string number into actual number (value)
                                               // ex. "43" vs 43
-    FastLED.setBrightness(brightness);     //change the brightness to new value
+      mainBrightness = mbrightness;  //making temporary mbrightness equal mainbrightness which gets called in loop
+  }  
+  //NOTE TO SELF: IF MAKING NEW TOPIC, YOU ALSO HAVE TO SUBSCRIBE TO IT AT THE MQTT SUB SPOT 
+  else if (topic=="soph/cam/brightness") {
+
+    int cbrightness = incomingMessage.toInt();
+
+    camBrightness = cbrightness; //same situation as above in mainbrightess
   }
 
   else if (topic=="soph/pattern"){    //Pattern Mqtt selection

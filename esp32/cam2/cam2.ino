@@ -169,7 +169,7 @@ void loop() {
 
   ArduinoOTA.handle(); // OTA command neeed in loop
 
-  if (!client.connected()) { //PubSubClient reconnect
+  if (!client.connected()) { //PubSubClient reconnect, handles all of it
     reconnect();
   }
 
