@@ -35,7 +35,7 @@ def brightnessmain(valtwo):
 		
 @app.route("/api/main/pattern/solidwhite", methods=['POST'])
 def solidwhitemain():
-	client.publish("soph/pattern", "solidwhite")
+	client.publish("soph/main/pattern", "solidwhite")
 	return "ok"
 	
 @app.route("/api/pattern/rainbow", methods=['POST'])
@@ -96,4 +96,4 @@ def campattern():
 	
 	
 if __name__ == "__main__":
-	app.run(host="10.42.0.1", port=800)
+	app.run(host="10.42.0.1", port=80)
