@@ -14,25 +14,108 @@
 	font-weight:bold;
 	font-family:courier;
 	}
+    #song {
+	    background-color:black;
+	    font-size:40pt;
+	    color:white;
+	    font-weight:bold;
+	    font-family: courier;
+	    overflow:hidden;
+	    white-space:nowrap;
+	    width:460px;
+    	}		
+
+    #songText {
+    display: inline-block;
+    animation: scrollSong 30s linear infinite;
+}
+
+@keyframes scrollSong {
+    0% { transform: translateX(0); }
+    60% { transform: translateX(0); }
+    100%{ transform: translateX(-100%); }
+}
+	    
+    #album {
+	    background-color:green;
+	    font-size:20pt;
+	    font-weight:bold;
+	    font-family: courier;
+    }
+    #artist {
+	    background-color:yellow;
+	    font-size:20pt;
+	    font-weight:bold;
+	    font-family:courier;
+    }
+    #albumImage {
+	    display:block;
+	    width:auto;
+	    height:450px;
+	    margin:0 auto;
+    }
+
     .btn:active {
 	background-color:red;
 	}
 </style>
 	</head>
-	<body>
-		<img id="albumImage">
+	<body
+		<br>>
+		<img id="albumImage" ><br>
+		<div id="song"><span id="songText"></span></div><br>
+		<div id="artist"></div>
+		<div id="album"></div>
+
 		<button id="rewindbutton"> INSERT IMAGE</button> <br>
-		<button id="pausePlay"> INSERT IMAGE </button>
-		<button id="fowardbutton"> INSERT IMAGE </button><br>
+		<button id="pausebutton"> INSERT IMAGE </button>
+		<button id="playbutton">haha</button>
+		<button id="forwardbutton"> INSERT IMAGE </button><br>
 		<button id="restartspotify"> INSERT IMAGE </button>
+		<button id="backbutton">BACK</button>
 
-<script>
+<script
+	>
+// <- slash slash only works inside javascript
+	const art = document.getElementById("albumImage"); //const means whatever is = is locked to it -->
+	const song = document.getElementById("song");   //document.getElementById returns an object, 
+	const artist = document.getElementById("artist");
+	const album = document.getElementById("album");	//so const song is an object 
 
 
+	async function updateNowPlaying() {  //async means the system can continue to run while the function waits
+    // image: just re-point src (no await needed) 
+  //  art.src = "/api/spotify/albumart?t=" + Date.now();  // ?t= + Date.now() is saying: make the URL 
+    const artRes = await fetch("/api/spotify/albumart")
+		const artObj = await artRes.text(); // object.text() can only be 'consumed' once so we store it 
+		art.src = artObj;			//in variable to use it again
+	console.log(artObj);
 
 
+    // text: wait for responses
+    const songRes = await fetch("/api/spotify/song");//fetch returns an object which has three parts: header, body, and 							//status code
+		 			 // songRes.text() is the response object 'body'. Its reading the body of the 
+    newSong = await songRes.text(); //HTTP response object and returning it as a string. 
+    document.getElementById("songText").textContent = newSong;	//.textContent is the text between
+								//the <span> struct for the ID'song'
+    
+    const albumRes = await fetch("/api/spotify/album");
+    album.textContent = await albumRes.text();
+
+    const artistRes = await fetch("/api/spotify/artist"); //fetch is making an HTTP request, and getting response object
+    artist.textContent = await artistRes.text();           // in return
+  }
+
+                   // run once immediately to get instant loading of song playing when opened
+  setInterval(updateNowPlaying, 1000); // then every second
+
+document.getElementById("rewindbutton").onclick = function() { fetch("/api/spotify/rewind"); };
+
+document.getElementById("playbutton").onclick = function() { fetch("/api/spotify/play"); };
+document.getElementById("pausebutton").onclick = function() { fetch("/api/spotify/pause"); };
+document.getElementById("forwardbutton").onclick = function() { fetch("/api/spotify/forward"); };
+document.getElementById("backbutton").onclick = function() {window.location.href = "/"};
 </script>
-
 
 	</body>
 </html>

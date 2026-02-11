@@ -122,33 +122,56 @@ def camlightchoose():
 def camBacklightbrightness():
     return send_file("/home/sophie/sophcode/camBacklightbrightness.html")
 
+@app.route("/spotify")
+def spotifyWeb():
+	return send_file("/home/sophie/sophcode/spotify.html")
 
 
         #SPOTIFY CONTROLS
 
 @app.route("/api/spotify/play")
 def spotifyPlay():
-    return subprocess.run(["playerctl", "play"])
+    subprocess.run(["playerctl", "play"])
+    return "ok"
 
 @app.route("/api/spotify/pause")
 def spotifyPause():
-    return subprocess.run(["playerctl", "pause"])
+    subprocess.run(["playerctl", "pause"])
+    return "ok"
 
 @app.route("/api/spotify/rewind")
 def spotifyRewind():
-    return subprocess.run(["playerctl", "previous"])
+    subprocess.run(["playerctl", "previous"])
+    return "ok"
 
 @app.route("/api/spotify/forward")
 def spotifyForward():
-    return subprocess.run(["playerctl", "next"])
+    subprocess.run(["playerctl", "next"])
+    return "ok"
 
-@app.route ("/api/spotify/songTitle")
+@app.route ("/api/spotify/song")
 def songTitle():
-    return subprocess.run(["playerctl", "title"])
+    song = subprocess.run(["playerctl", "metadata", "title"],
+                          capture_output=True,
+                          text=True
+                          )
+    return song.stdout.strip();
 
 @app.route ("/api/spotify/artist")
 def artist():
-    return subprocess.run(["playerctl", "artist"])
+    artist = subprocess.run(["playerctl", "metadata", "artist"],
+                   capture_output=True,
+                   text=True
+                   )
+    return artist.stdout.strip()
+
+@app.route ("/api/spotify/album")
+def albumS():
+    album = subprocess.run(["playerctl","metadata","album"],
+                           capture_output=True,
+                           text=True,
+                           )
+    return album.stdout.strip()
 
 @app.route ("/api/spotify/albumart")
 def spoti():  
@@ -159,15 +182,20 @@ def spoti():
     p2 = subprocess.Popen(["grep", "artUrl"], stdin=p1.stdout, stdout=subprocess.PIPE)
     p3 = subprocess.Popen(["awk", "{print $3}"], text=True, stdin=p2.stdout, stdout=subprocess.PIPE)
     p1.stdout.close()
-    p2.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+    p2.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits
     output = p3.communicate()[0]
-    return output
+    print(output)
+    return output.strip() # create output with '/n' at the end stripped off
     
 @app.route ("/api/spotify/restart")
 def restartSpotify():
     subprocess.run(["systemctl", "--user", "restart", "spotifyd"])
     return "ok"
 
+@app.route("/callback")
+def callback():
+    code = request.args.get("code")
+    return "Got code: " + str(code)
 
 if __name__ == "__main__":
 	app.run(host="10.42.0.1", port=80)
