@@ -290,7 +290,7 @@ void soph_rainbow() {     //Rainbow Pattern
 
 void initializeBrightness() {
   
-  myBPref.begin("myB", RO_MODE);     // Open our namespace (or create one)
+  myBPref.begin("myB", RO_MODE);     // Open our namespace (or create one), Read Only RO_MODE
                                   // if it doesn't exist already
 
   bool tpInit = myBPref.isKey("nvsInit");   //check if the key "myB" has been created
@@ -302,32 +302,32 @@ void initializeBrightness() {
 
   if (tpInit == false) {              //if it hasn't
     myBPref.end();    //end the RO_MODE, and 
-    myBPref.begin("myB", RW_MODE);    //start the RW_MODE
+    myBPref.begin("myB", RW_MODE);    //start the RW_MODE (Read_Write Mode)
 
-    myBPref.putUChar("myB", 40);     //create a key I actually want (brightness)
+    myBPref.putUChar("myB", 40);     //create a key I actually want (brightness) and assigning whatever beginning value, I chose 40
 
     myBPref.putBool("nvsInit", true);   //create the 'test key' and store the value 'true'
                                       //(which would have been false)
     myBPref.end(); //close the namespace in RW_MODE
-    myBPref.begin("myB",RO_MODE);
-    brightness = myBPref.getUChar("myB");
-    myBPref.end();
+    myBPref.begin("myB",RO_MODE); // 'open' the read only mode for myB (which is my brightness key)
+    brightness = myBPref.getUChar("myB"); //read the file/key for myB, in 8 bit integer (getUChar), and assign variable brightness to it
+    myBPref.end(); //end the read only mode, you must start, and end any time you are reading or writing 
   }
   else {return;}
 }
 
 void loadBrightness() {
-  myBPref.begin("myB", RO_MODE);
-  brightness = myBPref.getUChar("myB");
-  myBPref.end();
-  FastLED.setBrightness(brightness);
+  myBPref.begin("myB", RO_MODE); //open read only mode for myB
+  brightness = myBPref.getUChar("myB"); //read the file/key for myB, in 8 bit integer (getUChar), and assign variable brightness to it
+  myBPref.end(); //close the read only mode
+  FastLED.setBrightness(brightness); //set the brightness
 }
 
-void saveBrightness(uint8_t b) {
-  brightness = b;
+void saveBrightness(uint8_t b) { //b is the integer we are recieving from MQTT topic /brightness
+  brightness = b; //assign brightness to said integer
   FastLED.setBrightness(brightness); //set brightness
   myBPref.begin("myB", RW_MODE);    //open namespace/key to Read/Write
-  myBPref.putUChar("myB", b);       //write to b value to memory 
+  myBPref.putUChar("myB", b);       //write b value to memory under myB file
   myBPref.end();                    //close namespace
 }
 

@@ -1,8 +1,19 @@
 from paho.mqtt import client as mqtt
-from flask import Flask, send_file
+from flask import Flask, send_file, request, redirect
 import time
 import subprocess
+from dotenv import load_dotenv
+from urllib.parse import urlencode
+import requests
+import os
+import secrets
+import base64
+import threading
 
+
+
+
+load_dotenv() #loading the .env file for spotify authentication
 
 #TODO: 
 #import time
@@ -192,10 +203,130 @@ def restartSpotify():
     subprocess.run(["systemctl", "--user", "restart", "spotifyd"])
     return "ok"
 
+#SPOTIFY TOKEN AUTHENTICATION FLOW
+#a series of app.routes and functions that all pertain to gaining access and authenticating spotify API's. This is done through
+#redirecting to a login screen -> recieves code after login -> uses code to then post to recieve access token/refresh token ->
+# refresh function runs to keep access token fresh, it expires every hour and must be refreshed.
+#most of it is sending the right info through the Url in a parsed query string, and then taking recieved json info and using
+#it for accesss to the spotify API
+
+
+
+
+
+token = None     #starting the global token variable
+client_id = os.getenv("CLIENT_ID") #cliend id /client secret stored in .env file
+client_secret = os.getenv("CLIENT_SECRET")
+REDIRECT_URI = 'http://10.42.0.1:80/callback'; #where spotify sends you after login
+SCOPE = 'user-read-private user-read-email';
+STATE = secrets.token_urlsafe(16) #generate 16 random code
+auth_string = client_id + ":" + client_secret
+auth_bytes = auth_string.encode("utf-8") #encoding into bytes
+auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")  #encoded base64 string for client_id:client_secret
+
+
 @app.route("/callback")
 def callback():
-    code = request.args.get("code")
-    return "Got code: " + str(code)
+    global token #call global token variable
+
+    code = request.args.get("code") #request.arg.get() will take the query string and parse the variable 
+    state = request.args.get("state")
+    headers =  {
+	 'Content-Type': 'application/x-www-form-urlencoded', #all in the spotify documentation
+	 'Authorization':'Basic ' + auth_base64
+	   }
+    data = {
+		"code": code,
+		"redirect_uri": REDIRECT_URI,
+		"grant_type": 'authorization_code'
+	}
+
+
+   
+    r = requests.post('https://accounts.spotify.com/api/token', data=data, headers=headers) #post to url address to get response object
+    #variable r now contains the response object that spotify sent back, which contains all the info for tokens etc. 
+    response_json = r.json() #this creates a python dictionary from the json file that gets returned from spotify
+    token = response_json["access_token"] # get the string from the python dictionary we just created and store access token under global variable 'token'
+    refresh_token = response_json["refresh_token"]
+
+    refresh_object = open("refresh_token.txt", "w") #open file to store refresh_token, 'w' is write, it will delete/overwrite whats in there
+    refresh_object.write(refresh_token) #write refresh token to file
+    refresh_object.close() #close the writing file portion
+
+    start_refresh_thread_once() #start the refreshing thread daemon now that the refresh token is secured (only needs to happen once)
+
+    return "tokens stored"
+
+
+
+
+@app.route("/spotify/login")
+def get_token():
+    payload = {
+        'client_id':client_id,
+        'response_type':'code',
+        'redirect_uri':REDIRECT_URI,
+        'scope': SCOPE,
+        'state': STATE
+        }
+    query_string = urlencode(payload) #encodes the payload into a query string for URL
+    return redirect('https://accounts.spotify.com/authorize?' + query_string) #redirects user to LOGIN screen on spotify with attached query string
+
+
+# DOCUMENTATION: https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens
+@app.route("/spotify/refresh")
+def refresh_route():
+       refresh_access_token()
+       return "refreshed"
+
+
+
+def refresh_access_token():
+    global token #calling global token variable
+    rTobject = open("refresh_token.txt", "r") #reading the saved file "refresh_token.txt" that we saved earlier
+    stored_refresh_token = rTobject.read().strip()
+    rTobject.close()
+    params = {
+        'grant_type' : 'refresh_token',
+        'refresh_token' : stored_refresh_token
+    }
+    headers = {
+        'Content-Type' : 'application/x-www-form-urlencoded',
+        'Authorization' : 'Basic ' + auth_base64
+    }
+
+    refresh_token_response_object = requests.post("https://accounts.spotify.com/api/token", data=params, headers=headers)
+    if refresh_token_response_object.status_code == 200: 
+       
+        refresh_json = refresh_token_response_object.json() #make python dictionary out of json response object
+
+        if ("access_token" in refresh_json)== True: #if the key 'access_token' exists:
+            token = refresh_json["access_token"] #change global variable 'token' to the new access token
+            print("Access token refreshed.")
+
+        else: 
+            print("Refresh token not included")
+    else:
+        print("Refresh failed:", refresh_token_response_object.status_code, refresh_token_response_object.text)
+       
+def token_refresh_loop(): #calls the refresh token fucntion every 50 minutes to keep seamless playback possible
+    while True:
+        time.sleep(50 * 60)  # 50 minutes
+        refresh_access_token()
+
+refresh_thread_started = False #this value resets every reboot/fresh run
+
+
+def start_refresh_thread_once(): #makes sure the thread service daemon is only running once
+    global refresh_thread_started 
+    if refresh_thread_started == True: 
+        return
+    refresh_thread_started = True #once value is true, it will run start the thread once, and now only 'return' when called
+    threading.Thread(target=token_refresh_loop, daemon=True).start() #this creates a thread that calls refresh loop in the background
+
+
+if os.path.exists("refresh_token.txt"): #check to see if refresh_token.txt file has been created/stored
+    start_refresh_thread_once()  #start the daemon service
 
 if __name__ == "__main__":
 	app.run(host="10.42.0.1", port=80)
