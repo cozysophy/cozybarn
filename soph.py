@@ -9,6 +9,7 @@ import os
 import secrets
 import base64
 import threading
+import json
 
 
 
@@ -140,68 +141,75 @@ def spotifyWeb():
 
         #SPOTIFY CONTROLS
 
+
+@app.route("/spotify/now-playing")
+def now_playing_json():
+    headers = { "Authorization" : "Bearer " + token }
+      
+    
+    response = requests.get("https://api.spotify.com/v1/me/player", headers = headers)
+    stored_now_playing = response.json()
+    if response.status_code == 204:
+        return jsonify({
+		     "song": "None",
+            "album": "None",
+            "artist": "None",
+            "albumart" : "None"
+        })
+    
+    if response.status_code == 200:
+        item_object = stored_now_playing["item"]
+        artist = item_object["artists"][:3]
+        album = item_object["album"]["name"]
+        track = item_object["name"]
+        albumart = item_object["album"]["images"][0]["url"]
+        return jsonify({
+            "song": track,
+            "album": album,
+            "artist": artist,
+            "albumart" : albumart
+        })
+      
+
+
 @app.route("/api/spotify/play")
 def spotifyPlay():
-    subprocess.run(["playerctl", "play"])
-    return "ok"
+    headers = { "Authorization" : "Bearer " + token }
+    response = requests.put("https://api.spotify.com/v1/me/player/play", headers=headers)
+    return jsonify({
+    "status": response.status_code
+    })
 
 @app.route("/api/spotify/pause")
 def spotifyPause():
-    subprocess.run(["playerctl", "pause"])
-    return "ok"
+    headers = { "Authorization" : "Bearer " + token }
+    response = requests.put("https://api.spotify.com/v1/me/player/pause", headers=headers)
+    return jsonify({
+    "status": response.status_code
+    })
 
 @app.route("/api/spotify/rewind")
 def spotifyRewind():
-    subprocess.run(["playerctl", "previous"])
-    return "ok"
+    headers = { "Authorization" : "Bearer " + token }
+    response = requests.post("https://api.spotify.com/v1/me/player/previous", headers=headers)
+    return jsonify({
+    "status": response.status_code
+    })
 
 @app.route("/api/spotify/forward")
 def spotifyForward():
-    subprocess.run(["playerctl", "next"])
-    return "ok"
+    headers = { "Authorization" : "Bearer " + token }
+    response = requests.post("https://api.spotify.com/v1/me/player/pause", headers=headers)
+    return jsonify({
+    "status": response.status_code
+    })
 
-@app.route ("/api/spotify/song")
-def songTitle():
-    song = subprocess.run(["playerctl", "metadata", "title"],
-                          capture_output=True,
-                          text=True
-                          )
-    return song.stdout.strip();
-
-@app.route ("/api/spotify/artist")
-def artist():
-    artist = subprocess.run(["playerctl", "metadata", "artist"],
-                   capture_output=True,
-                   text=True
-                   )
-    return artist.stdout.strip()
-
-@app.route ("/api/spotify/album")
-def albumS():
-    album = subprocess.run(["playerctl","metadata","album"],
-                           capture_output=True,
-                           text=True,
-                           )
-    return album.stdout.strip()
-
-@app.route ("/api/spotify/albumart")
-def spoti():  
-
-    #subprocess defined in the docu: https://docs.python.org/3/library/subprocess.html#replacing-bin-sh-shell-command-substitution
-    #greps, then awk to get the column of url data, its column three in this case
-    p1 = subprocess.Popen(["playerctl", "metadata"], stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(["grep", "artUrl"], stdin=p1.stdout, stdout=subprocess.PIPE)
-    p3 = subprocess.Popen(["awk", "{print $3}"], text=True, stdin=p2.stdout, stdout=subprocess.PIPE)
-    p1.stdout.close()
-    p2.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits
-    output = p3.communicate()[0]
-    print(output)
-    return output.strip() # create output with '/n' at the end stripped off
     
 @app.route ("/api/spotify/restart")
 def restartSpotify():
     subprocess.run(["systemctl", "--user", "restart", "spotifyd"])
     return "ok"
+
 
 #SPOTIFY TOKEN AUTHENTICATION FLOW
 #a series of app.routes and functions that all pertain to gaining access and authenticating spotify API's. This is done through

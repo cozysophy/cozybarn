@@ -1,0 +1,63 @@
+
+@app.route ("/api/spotify/song")
+def songTitle():
+    song = subprocess.run(["playerctl", "metadata", "title"],
+                          capture_output=True,
+                          text=True
+                          )
+    return song.stdout.strip();
+
+@app.route ("/api/spotify/artist")
+def artist():
+    artist = subprocess.run(["playerctl", "metadata", "artist"],
+                   capture_output=True,
+                   text=True
+                   )
+    return artist.stdout.strip()
+
+@app.route ("/api/spotify/album")
+def albumS():
+    album = subprocess.run(["playerctl","metadata","album"],
+                           capture_output=True,
+                           text=True,
+                           )
+    return album.stdout.strip()
+
+@app.route ("/api/spotify/albumart")
+def spoti():  
+
+
+    #subprocess defined in the docu: https://docs.python.org/3/library/subprocess.html#replacing-bin-sh-shell-command-substitution
+    #greps, then awk to get the column of url data, its column three in this case
+    p1 = subprocess.Popen(["playerctl", "metadata"], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(["grep", "artUrl"], stdin=p1.stdout, stdout=subprocess.PIPE)
+    p3 = subprocess.Popen(["awk", "{print $3}"], text=True, stdin=p2.stdout, stdout=subprocess.PIPE)
+    p1.stdout.close()
+    p2.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits
+    output = p3.communicate()[0]
+    print(output)
+    return output.strip() # create output with '/n' at the end stripped off
+    
+async function updateNowPlaying() {  //async means the system can continue to run while the function waits
+    // image: just re-point src (no await needed) 
+  //  art.src = "/api/spotify/albumart?t=" + Date.now();  // ?t= + Date.now() is saying: make the URL 
+    const artRes = await fetch("/api/spotify/albumart")
+		const artObj = await artRes.text(); // object.text() can only be 'consumed' once so we store it 
+		art.src = artObj;			//in variable to use it again
+	console.log(artObj);
+
+
+    // text: wait for responses
+    const songRes = await fetch("/api/spotify/song");//fetch returns an object which has three parts: header, body, and 							//status code
+		 			 // songRes.text() is the response object 'body'. Its reading the body of the 
+    newSong = await songRes.text(); //HTTP response object and returning it as a string. 
+    document.getElementById("songText").textContent = newSong;	//.textContent is the text between
+								//the <span> struct for the ID'song'
+    
+    const albumRes = await fetch("/api/spotify/album");
+    album.textContent = await albumRes.text();
+
+    const artistRes = await fetch("/api/spotify/artist"); //fetch is making an HTTP request, and getting response object
+    artist.textContent = await artistRes.text();           // in return
+  }
+
