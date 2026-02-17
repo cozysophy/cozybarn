@@ -1,21 +1,25 @@
-<doctype !HTML>
+<!DOCTYPE html>
 <html>
 	<head>
 <style>
-	    html, body { margin:0; height:100%; background:#0b0b0b; }
+	    html, body { margin:0; height:100%; background:#000000; }
     .screen { width:480px; height:800px; margin:0 auto; padding:12px; box-sizing:border-box; }
     @media (max-width:480px), (max-height:800px) { .screen { width:100vw; height:100vh; } }
 
     .btn {
-	background-color:yellow;
+	background-color:rgb(255, 204, 0);
 	width:160px;
 	height:160px;
 	font-size:60pt;
 	font-weight:bold;
 	font-family:courier;
 	}
+	#playbutton {
+		width:70px;
+		height:auto;
+	}
     #song {
-	    background-color:black;
+	    background-color:rgb(35, 26, 52);
 	    font-size:40pt;
 	    color:white;
 	    font-weight:bold;
@@ -37,14 +41,16 @@
 }
 	    
     #album {
-	    background-color:green;
+	    background-color:rgb(239, 128, 237);
 	    font-size:20pt;
+		color:black;
 	    font-weight:bold;
 	    font-family: courier;
     }
     #artist {
 	    background-color:yellow;
 	    font-size:20pt;
+		color:black;
 	    font-weight:bold;
 	    font-family:courier;
     }
@@ -69,11 +75,11 @@
 		<div id="artist"></div>
 		<div id="album"></div>
 
-		<button id="rewindbutton"> INSERT IMAGE</button> <br>
-		<button id="pausebutton"> INSERT IMAGE </button>
-		<button id="playbutton">haha</button>
-		<button id="forwardbutton"> INSERT IMAGE </button><br>
-		<button id="restartspotify"> INSERT IMAGE </button>
+		<button id="rewindbutton"> <img src="/static/rewind.gif"></button> <br>
+		<button id="pausebutton"> <img src="static/pause.gif"> </button>
+		<button id="playbutton"><img src="/static/play.gif"></button>
+		<button id="forwardbutton"> <img src="/static/forward.gif"> </button><br>
+		<button id="restartspotify"> RESTART </button>
 		<button id="backbutton">BACK</button>
 
 <script

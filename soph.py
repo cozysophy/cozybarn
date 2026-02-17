@@ -17,12 +17,19 @@ import json
 load_dotenv() #loading the .env file for spotify authentication
 
 #TODO: 
-#import time
-#- -create app routes for seperate webpage for camming lights
-#       create buttons/update file locations
-# --create app routes for main LED pattern, main LED brightness
-#-- create html webpage for main LED button/create buttons
-# JUST TESTING BECAUSE GAAAAAAAAAAAAAAAAAAAWD
+
+#Create route for playlist and playlist choosing 
+#Create spotify api calls for playlist
+
+#- DONE-create app routes for seperate webpage for camming lights
+#  DONE     create buttons/update file locations
+# -DONE-create app routes for main LED pattern, main LED brightness
+#--DONE create html webpage for main LED button/create buttons
+# DONE JUST TESTING BECAUSE GAAAAAAAAAAAAAAAAAAAWD
+# DONE create spotify authenticaton routes
+# DONE create spotify token and refresh token calls
+# DONE create spotify backend api calls and routes for front end UI
+
 
 
 #port gets set in the service not the py
@@ -92,6 +99,7 @@ def brightness(val):
 		return "ok"
 		
 		#WEBPAGE ROUTING
+            
 		#note: Flask always needs a definition under app.route
 
 @app.route("/")
@@ -142,14 +150,14 @@ def spotifyWeb():
         #SPOTIFY CONTROLS
 
 
-@app.route("/spotify/now-playing")
+@app.route("/spotify/now-playing") #route for converting spotify now-playing OBJECT into parsed JSON and sending to frontend
 def now_playing_json():
     headers = { "Authorization" : "Bearer " + token }
       
     
-    response = requests.get("https://api.spotify.com/v1/me/player", headers = headers)
-    stored_now_playing = response.json()
-    if response.status_code == 204:
+    response = requests.get("https://api.spotify.com/v1/me/player", headers = headers) 
+    stored_now_playing = response.json() #Parse response object into python dictionary and store
+    if response.status_code == 204: #code spotify will throw if nothing playing
         return jsonify({
 		     "song": "None",
             "album": "None",
@@ -158,12 +166,12 @@ def now_playing_json():
         })
     
     if response.status_code == 200:
-        item_object = stored_now_playing["item"]
-        artist = item_object["artists"][:3]
+        item_object = stored_now_playing["item"] #'item' is the main branch which holds all the now-playing info
+        artist = item_object["artists"][:3] #list max 3 artists
         album = item_object["album"]["name"]
         track = item_object["name"]
-        albumart = item_object["album"]["images"][0]["url"]
-        return jsonify({
+        albumart = item_object["album"]["images"][0]["url"] #pull the first image [0] which corresponds to the large image size on spotify
+        return jsonify({ #parsing the selected values back into json to be returned to whoever calls this link
             "song": track,
             "album": album,
             "artist": artist,
@@ -174,8 +182,8 @@ def now_playing_json():
 
 @app.route("/api/spotify/play")
 def spotifyPlay():
-    headers = { "Authorization" : "Bearer " + token }
-    response = requests.put("https://api.spotify.com/v1/me/player/play", headers=headers)
+    headers = { "Authorization" : "Bearer " + token } #token authentication always needed for any Spotify API call
+    response = requests.put("https://api.spotify.com/v1/me/player/play", headers=headers) 
     return jsonify({
     "status": response.status_code
     })
@@ -222,26 +230,26 @@ def restartSpotify():
 
 
 
-token = None     #starting the global token variable
+token = None     #starting the global 'token' variable
 client_id = os.getenv("CLIENT_ID") #cliend id /client secret stored in .env file
 client_secret = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = 'http://10.42.0.1:80/callback'; #where spotify sends you after login
 SCOPE = 'user-read-private user-read-email';
 STATE = secrets.token_urlsafe(16) #generate 16 random code
-auth_string = client_id + ":" + client_secret
-auth_bytes = auth_string.encode("utf-8") #encoding into bytes
-auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")  #encoded base64 string for client_id:client_secret
+auth_string = client_id + ":" + client_secret #string to be encoded 
+auth_bytes = auth_string.encode("utf-8") #encoding string into bytes
+auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")  #encoding bytes into base64, needed for URL query parsing
 
 
 @app.route("/callback")
 def callback():
     global token #call global token variable
 
-    code = request.args.get("code") #request.arg.get() will take the query string and parse the variable 
+    code = request.args.get("code") #request.arg.get() will take the URL query string and parse into usable string
     state = request.args.get("state")
     headers =  {
 	 'Content-Type': 'application/x-www-form-urlencoded', #all in the spotify documentation
-	 'Authorization':'Basic ' + auth_base64
+	 'Authorization':'Basic ' + auth_base64 #heres that encoded base64 encoded clientid:clientsecret
 	   }
     data = {
 		"code": code,
