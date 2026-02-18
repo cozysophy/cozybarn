@@ -1,5 +1,5 @@
 from paho.mqtt import client as mqtt
-from flask import Flask, send_file, request, redirect
+from flask import Flask, send_file, request, redirect, jsonify
 import time
 import subprocess
 from dotenv import load_dotenv
@@ -152,10 +152,16 @@ def spotifyWeb():
 
 @app.route("/spotify/now-playing") #route for converting spotify now-playing OBJECT into parsed JSON and sending to frontend
 def now_playing_json():
+    global token #call global token variable
+    if not token:
+        refresh_access_token()
     headers = { "Authorization" : "Bearer " + token }
-      
+    
+    
     
     response = requests.get("https://api.spotify.com/v1/me/player", headers = headers) 
+    print("SPOTIFY /me/player STATUS =", response.status_code)
+    print("SPOTIFY /me/player BODY =", response.text[:500])
     stored_now_playing = response.json() #Parse response object into python dictionary and store
     if response.status_code == 204: #code spotify will throw if nothing playing
         return jsonify({
@@ -167,7 +173,7 @@ def now_playing_json():
     
     if response.status_code == 200:
         item_object = stored_now_playing["item"] #'item' is the main branch which holds all the now-playing info
-        artist = item_object["artists"][:3] #list max 3 artists
+        artist = [a["name"] for a in item_object["artists"][:3]] #list max 3 artists
         album = item_object["album"]["name"]
         track = item_object["name"]
         albumart = item_object["album"]["images"][0]["url"] #pull the first image [0] which corresponds to the large image size on spotify
@@ -177,11 +183,18 @@ def now_playing_json():
             "artist": artist,
             "albumart" : albumart
         })
-      
+    return jsonify({
+    "error": "spotify api failed",
+    "status": response.status_code,
+    "body": response.text
+    }), 500
+        
 
 
 @app.route("/api/spotify/play")
 def spotifyPlay():
+    global token #call global token variable
+
     headers = { "Authorization" : "Bearer " + token } #token authentication always needed for any Spotify API call
     response = requests.put("https://api.spotify.com/v1/me/player/play", headers=headers) 
     return jsonify({
@@ -190,6 +203,8 @@ def spotifyPlay():
 
 @app.route("/api/spotify/pause")
 def spotifyPause():
+    global token #call global token variable
+
     headers = { "Authorization" : "Bearer " + token }
     response = requests.put("https://api.spotify.com/v1/me/player/pause", headers=headers)
     return jsonify({
@@ -198,6 +213,8 @@ def spotifyPause():
 
 @app.route("/api/spotify/rewind")
 def spotifyRewind():
+    global token #call global token variable
+
     headers = { "Authorization" : "Bearer " + token }
     response = requests.post("https://api.spotify.com/v1/me/player/previous", headers=headers)
     return jsonify({
@@ -206,8 +223,10 @@ def spotifyRewind():
 
 @app.route("/api/spotify/forward")
 def spotifyForward():
+    global token #call global token variable
+
     headers = { "Authorization" : "Bearer " + token }
-    response = requests.post("https://api.spotify.com/v1/me/player/pause", headers=headers)
+    response = requests.post("https://api.spotify.com/v1/me/player/next", headers=headers)
     return jsonify({
     "status": response.status_code
     })
@@ -233,8 +252,8 @@ def restartSpotify():
 token = None     #starting the global 'token' variable
 client_id = os.getenv("CLIENT_ID") #cliend id /client secret stored in .env file
 client_secret = os.getenv("CLIENT_SECRET")
-REDIRECT_URI = 'http://10.42.0.1:80/callback'; #where spotify sends you after login
-SCOPE = 'user-read-private user-read-email';
+REDIRECT_URI = 'http://127.0.0.1:80/callback'; #where spotify sends you after login
+SCOPE = "user-read-playback-state user-modify-playback-state user-read-private user-read-email"
 STATE = secrets.token_urlsafe(16) #generate 16 random code
 auth_string = client_id + ":" + client_secret #string to be encoded 
 auth_bytes = auth_string.encode("utf-8") #encoding string into bytes
@@ -345,4 +364,4 @@ if os.path.exists("refresh_token.txt"): #check to see if refresh_token.txt file 
     start_refresh_thread_once()  #start the daemon service
 
 if __name__ == "__main__":
-	app.run(host="10.42.0.1", port=80)
+    app.run(host="0.0.0.0", port=80)

@@ -18,6 +18,9 @@
 		width:70px;
 		height:auto;
 	}
+    #playb {
+            width:90px;
+            height:auto;
     #song {
 	    background-color:rgb(35, 26, 52);
 	    font-size:40pt;
@@ -75,10 +78,10 @@
 		<div id="artist"></div>
 		<div id="album"></div>
 
-		<button id="rewindbutton"> <img src="/static/rewind.gif"></button> <br>
-		<button id="pausebutton"> <img src="static/pause.gif"> </button>
-		<button id="playbutton"><img src="/static/play.gif"></button>
-		<button id="forwardbutton"> <img src="/static/forward.gif"> </button><br>
+		<button id="rewindbutton"> <img id="playb" src="/static/rewind.gif"></button>
+		<button id="playbutton"> <img id="playb" src="static/play.gif"> </button>
+		<button id="pausebutton"><img id="playb" src="/static/pause.gif"></button>
+		<button id="forwardbutton"> <img id="playb" src="/static/forward.gif"> </button><br>
 		<button id="restartspotify"> RESTART </button>
 		<button id="backbutton">BACK</button>
 
