@@ -14,13 +14,21 @@
 	font-weight:bold;
 	font-family:courier;
 	}
-	#playbutton {
-		width:70px;
-		height:auto;
-	}
+    .img-btn {
+        padding: 0;
+        border: none;
+        background: none;
+        }
+
+    .img-btn img {
+        display: block;
+        }
+
     #playb {
-            width:90px;
+            width:auto;
             height:auto;
+            display:block;
+	   }
     #song {
 	    background-color:rgb(35, 26, 52);
 	    font-size:40pt;
@@ -29,7 +37,7 @@
 	    font-family: courier;
 	    overflow:hidden;
 	    white-space:nowrap;
-	    width:460px;
+	    width:480px;
     	}		
 
     #songText {
@@ -59,14 +67,49 @@
     }
     #albumImage {
 	    display:block;
-	    width:auto;
-	    height:450px;
+	    width:450px;
+	    height:auto;
 	    margin:0 auto;
     }
 
     .btn:active {
 	background-color:red;
+    }
+
+    .row {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         }
+
+    .row img {
+         width: 480px;  
+         height: auto;
+         }
+
+    .slidercontainer {
+	
 	}
+    .slider {
+     -webkit-appearance: none;
+  width: 480px;
+  height: 25px;
+  background: #4C0080;
+  outline: none;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  }
+    .slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #FF00E8;
+  cursor: pointer;
+}
+    ::-webkit-scrollbar {
+    display: none;
+}
 </style>
 	</head>
 	<body>
@@ -77,26 +120,32 @@
 		<div id="song"><span id="songText"></span></div><br>
 		<div id="artist"></div>
 		<div id="album"></div>
-
-		<button id="rewindbutton"> <img id="playb" src="/static/rewind.gif"></button>
-		<button id="playbutton"> <img id="playb" src="static/play.gif"> </button>
-		<button id="pausebutton"><img id="playb" src="/static/pause.gif"></button>
-		<button id="forwardbutton"> <img id="playb" src="/static/forward.gif"> </button><br>
+          <div class="row">
+		<button id="rewindbutton" class="img-btn"> <img id="playb" src="/static/rewind.gif"></button>
+		<button id="playbutton" class="img-btn"> <img id="playb" src="static/play.gif"> </button>
+		<button id="pausebutton" class="img-btn"><img id="playb" src="/static/pause.gif"></button>
+		<button id="forwardbutton" class="img-btn"> <img id="playb" src="/static/forward.gif"> </button>
+          </div>
+<br>
+              
+                <input class="slider" type=range id="volumeslider" min="0" max="100">
+	  
+<br>
 		<button id="restartspotify"> RESTART </button>
 		<button id="backbutton">BACK</button>
-
-<script
-	>
+<script>
 // <- slash slash only works inside javascript
 
-	async function updateNowPlaying() {  //async means the system can continue to run while the function waits
-		const now_playing = await fetch("/spotify/now-playing")
-		jsonplaying = await now_playing.json()
-		
-		const albumImgRes = jsonplaying.albumart;
-		document.getElementById("albumImage").src = albumImgRes;
+    async function updateNowPlaying() {  //async means the system can continue to run while the function waits
 
-		const songRes = jsonplaying.song;
+        const now_playing = await fetch("/spotify/now-playing")
+	jsonplaying = await now_playing.json()
+        console.log(jsonplaying)
+		
+	const albumImgRes = jsonplaying.albumart;	
+	document.getElementById("albumImage").src = albumImgRes;
+
+	const songRes = jsonplaying.song;
     	document.getElementById("songText").textContent = songRes;	//.textContent is the text between
 								//the <span> struct for the ID'song'
     
@@ -105,12 +154,14 @@
 
         const artistRes = jsonplaying.artist; //fetch is making an HTTP request, and getting response object
         document.getElementById("artist").textContent = artistRes;      // in return
+
+	const volumeInit = jsonplaying.volume;
+	document.getElementById("volumeslider").value = volumeInit;        
   }
 
 
 
-
-                   // run once immediately to get instant loading of song playing when opened
+    updateNowPlaying();               // run once immediately to get instant loading of song playing when opened
   setInterval(updateNowPlaying, 5000); // then every second
 
 document.getElementById("rewindbutton").onclick = function() { fetch("/api/spotify/rewind"); };
@@ -118,6 +169,13 @@ document.getElementById("playbutton").onclick = function() { fetch("/api/spotify
 document.getElementById("pausebutton").onclick = function() { fetch("/api/spotify/pause"); };
 document.getElementById("forwardbutton").onclick = function() { fetch("/api/spotify/forward"); };
 document.getElementById("backbutton").onclick = function() {window.location.href = "/"};
+
+const slider = document.getElementById("volumeslider");
+slider.addEventListener("change", function () {
+     var value = slider.value;
+     fetch("/spotify/volume/" + value, {method: "POST" });
+     });
+
 </script>
 
 	</body>

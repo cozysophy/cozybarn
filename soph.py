@@ -148,7 +148,14 @@ def spotifyWeb():
 
 
         #SPOTIFY CONTROLS
-
+@app.route("/spotify/volume/<volume>", methods=['POST'])
+def volumeSpotify(volume):
+    global token
+    headers = { "Authorization" : "Bearer " + token }
+    data = {"volume_percent" : volume}
+    query_string = urlencode(data)
+    requests.put("https://api.spotify.com/v1/me/player/volume?" + query_string, headers=headers)
+    return "ok"
 
 @app.route("/spotify/now-playing") #route for converting spotify now-playing OBJECT into parsed JSON and sending to frontend
 def now_playing_json():
@@ -177,11 +184,13 @@ def now_playing_json():
         album = item_object["album"]["name"]
         track = item_object["name"]
         albumart = item_object["album"]["images"][0]["url"] #pull the first image [0] which corresponds to the large image size on spotify
+        volume = stored_now_playing["device"]["volume_percent"]
         return jsonify({ #parsing the selected values back into json to be returned to whoever calls this link
             "song": track,
             "album": album,
             "artist": artist,
-            "albumart" : albumart
+            "albumart" : albumart,
+            "volume" : volume
         })
     return jsonify({
     "error": "spotify api failed",
