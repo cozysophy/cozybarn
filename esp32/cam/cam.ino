@@ -5,6 +5,9 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include "transimage.h"
+#include "heart.h"
+#include "lips.h"
+#include "mrmittens.h"
 
 //ESP32 runs two led strips, using OTA, and mqtt subscriber. The message gets
 //transcribed into a string, which gets delegated to its right purpose. It subscribes to brightness and pattern, 
@@ -27,7 +30,7 @@ enum Pattern {
 
 //Variable that holds current pattern
 //it comes from Pattern, and will only accept whatever is in the enum
-Pattern currentPattern = PATTERN_RAINBOW;
+Pattern currentPattern = PATTERN_TRANS;
 
 //makes rainbow go brrrr
 uint8_t oneMore = 0;
@@ -111,7 +114,7 @@ void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(strip1, NUM_LEDS); //[0]  these two lines of code have to be in order for brightness to work properly
   FastLED.addLeds<WS2812B, DATA_PIN_2, GRB>(strip2, NUM_LEDS); //[1]
   
-  soph_rainbow(); //start initial pattern that doesn't depend on MQTT connectiveness 
+  transPattern(); //start initial pattern that doesn't depend on MQTT connectiveness 
   FastLED.setBrightness(10);
   FastLED.show();
 
@@ -173,7 +176,6 @@ void loop() {
 
     case PATTERN_TRANS:
       transPattern();
-      transmainPattern():
       break;
 
   }
@@ -248,6 +250,14 @@ void soph_rainbow() {     //Rainbow Pattern
   oneMore++; 
 }
 
+uint16_t XY(uint8_t x, uint8_t y) {
+    if (y % 2 == 0) {
+        return y * IMG_WIDTH + x;
+    } else {
+        return y * IMG_WIDTH + (IMG_WIDTH - 1 - x);
+    }
+}
+
 void transPattern(){
 
  for (uint8_t y = 0; y < IMG_HEIGHT; y++) {
@@ -255,11 +265,7 @@ void transPattern(){
 
       uint16_t i = XY(x, y);
 
-      uint8_t r = IMAGE[y][x][0];
-      uint8_t g = IMAGE[y][x][1];
-      uint8_t b = IMAGE[y][x][2];
-
-      strip2[i] = CRGB(r, g, b);
+      strip2[i] = IMAGEMITTENS[y][x];
     }
   }
 }
