@@ -56,21 +56,12 @@ client.loop_start() #keeps network flowing
 app = Flask(__name__)
 
 
-			#API CALLS
-@app.route("/api/main/pattern/rainbow", methods=['POST'])
+             #LED PATTERN API CALLS
+
+@app.route("/api/main/pattern/rainbow", methods=['POST']) #made up the route, methods will be POST, create a function, client.publish(topic,payload) is MQTT
 def rainbowmain():
 	client.publish("soph/main/pattern", "rainbow")
 	return "ok"
-
-@app.route("/api/mainbrightness/<valtwo>", methods=['POST']) #route variable feeds into function which gets into publish and sends message on correct topic
-def brightnessmain(valtwo):
-		client.publish("soph/main/brightness", valtwo)
-		return "ok"
-		
-@app.route("/api/cam/brightness/<valone>", methods=['POST'])
-def brightnesscam(valone):
-		client.publish("soph/cam/brightness", valone)
-		return "ok"
 		
 @app.route("/api/main/pattern/solidwhite", methods=['POST'])
 def solidwhitemain():
@@ -92,10 +83,28 @@ def off():
 def solidwhite():
 	client.publish("soph/pattern", "solidwhite")
 	return "ok"
+
+@app.route("/api/pattern/transgender", methods=['POST'])
+def transgenderPattern():
+      client.publish("soph/pattern", "transgender")
+      return "ok"
 	
+    #LED BRIGHTNESS API CALLS
+
+    
 @app.route("/api/brightness/<val>", methods=['POST']) #brightness for main CAM light
 def brightness(val):
 		client.publish("soph/brightness", val)
+		return "ok"
+
+@app.route("/api/cam/brightness/<valone>", methods=['POST'])
+def brightnesscam(valone):
+		client.publish("soph/cam/brightness", valone)
+		return "ok"
+
+@app.route("/api/mainbrightness/<valtwo>", methods=['POST']) #route variable feeds into function which gets into publish and sends message on correct topic
+def brightnessmain(valtwo):
+		client.publish("soph/main/brightness", valtwo)
 		return "ok"
 		
 		#WEBPAGE ROUTING
@@ -148,6 +157,7 @@ def spotifyWeb():
 
 
         #SPOTIFY CONTROLS
+
 @app.route("/spotify/volume/<volume>", methods=['POST'])
 def volumeSpotify(volume):
     global token
@@ -160,16 +170,15 @@ def volumeSpotify(volume):
 @app.route("/spotify/now-playing") #route for converting spotify now-playing OBJECT into parsed JSON and sending to frontend
 def now_playing_json():
     global token #call global token variable
-    if not token:
+    if not token: #refresh if no token available 
         refresh_access_token()
     headers = { "Authorization" : "Bearer " + token }
-    
-    
-    
-    response = requests.get("https://api.spotify.com/v1/me/player", headers = headers) 
-    print("SPOTIFY /me/player STATUS =", response.status_code)
+
+    response = requests.get("https://api.spotify.com/v1/me/player", headers = headers) #GET with headers, return the entire json package of now-playing
+    print("SPOTIFY /me/player STATUS =", response.status_code) #CHATGPT recommended this for debug
     print("SPOTIFY /me/player BODY =", response.text[:500])
-    stored_now_playing = response.json() #Parse response object into python dictionary and store
+    stored_now_playing = response.json() #Parse response object into python dictionary and store into variable
+
     if response.status_code == 204: #code spotify will throw if nothing playing
         return jsonify({
 		     "song": "None",
@@ -205,7 +214,7 @@ def spotifyPlay():
     global token #call global token variable
 
     headers = { "Authorization" : "Bearer " + token } #token authentication always needed for any Spotify API call
-    response = requests.put("https://api.spotify.com/v1/me/player/play", headers=headers) 
+    response = requests.put("https://api.spotify.com/v1/me/player/play", headers=headers) #PUT request, no action needed other than this
     return jsonify({
     "status": response.status_code
     })
@@ -256,20 +265,20 @@ def restartSpotify():
 
 
 
-
+#VARIABLE DATASET FOR AUTHENTICATION
 
 token = None     #starting the global 'token' variable
 client_id = os.getenv("CLIENT_ID") #cliend id /client secret stored in .env file
 client_secret = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = 'http://127.0.0.1:80/callback'; #where spotify sends you after login
-SCOPE = "user-read-playback-state user-modify-playback-state user-read-private user-read-email"
+SCOPE = "user-read-playback-state user-modify-playback-state user-read-private user-read-email" #IMPORTANT TO GET RIGHT
 STATE = secrets.token_urlsafe(16) #generate 16 random code
 auth_string = client_id + ":" + client_secret #string to be encoded 
 auth_bytes = auth_string.encode("utf-8") #encoding string into bytes
 auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")  #encoding bytes into base64, needed for URL query parsing
 
 
-@app.route("/callback")
+@app.route("/callback") #Spotify sends code to this webaddress in the URL query string
 def callback():
     global token #call global token variable
 
@@ -285,8 +294,6 @@ def callback():
 		"grant_type": 'authorization_code'
 	}
 
-
-   
     r = requests.post('https://accounts.spotify.com/api/token', data=data, headers=headers) #post to url address to get response object
     #variable r now contains the response object that spotify sent back, which contains all the info for tokens etc. 
     response_json = r.json() #this creates a python dictionary from the json file that gets returned from spotify

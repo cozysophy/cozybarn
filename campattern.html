@@ -28,6 +28,7 @@
 <body>
 <button class="btn" id="rainbowButton">fag</button><br>
 <button class="btn" id="whiteButton">white</button><br>
+button class="btn" id="transbutton">trans</button><br>
 <button class="btn" id="offButton">off</button><br>
 <button class="btn" id="backbutton">back</button>
 
@@ -36,6 +37,8 @@
   document.getElementById("rainbowButton").onclick  = () => fetch("/api/pattern/rainbow", {method: "POST"});
   document.getElementById("offButton").onclick        = () => fetch("/api/pattern/off", {method: "POST"});
   document.getElementById("whiteButton").onclick       = () => fetch("/api/pattern/solidwhite", {method: "POST"});
+  document.getElementById("transbutton").onclick = function () { fetch("/api/pattern/transgender", {method: "POST"});}
+  
   document.getElementById("backbutton").onclick = () => {window.location.href = "/camLEDcontrol"};
 </script>
 

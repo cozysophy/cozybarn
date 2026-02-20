@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
+#include "transimage.h"
 
 //ESP32 runs two led strips, using OTA, and mqtt subscriber. The message gets
 //transcribed into a string, which gets delegated to its right purpose. It subscribes to brightness and pattern, 
@@ -20,7 +21,8 @@ uint8_t camBrightness = 10;
 enum Pattern {
   PATTERN_OFF,
   PATTERN_RAINBOW,
-  PATTERN_WHITE
+  PATTERN_WHITE,
+  PATTERN_TRANS
 };
 
 //Variable that holds current pattern
@@ -35,7 +37,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length);
 
 // Network for PubSubClient
 WiFiClient wifiClient;
-PubSubClient client("10.42.0.1", 1883, mqttCallback, wifiClient); //client(IPaddress, port, callback function pointer, networkclient)
+PubSubClient client("10.42.0.1", 1883, mqttCallback, wifiClient); //client(IPaddressOfBroker, port, callback function pointer, networkclient)
                                                                   //note: client is just a name variable, used for all the .stuff, if you change it
                                                                   //you have to change all of those, as well (ex. client.connected)
 
@@ -44,6 +46,7 @@ PubSubClient client("10.42.0.1", 1883, mqttCallback, wifiClient); //client(IPadd
 #define DATA_PIN_1 27
 #define DATA_PIN_2 14
 #define NUM_LEDS 300
+
 
 // Analog pins for potentiometers
 const uint8_t BRIGHTNESS_POT_PIN = 34;
@@ -168,6 +171,11 @@ void loop() {
       whiteLEDstate();
       break;
 
+    case PATTERN_TRANS:
+      transPattern();
+      transmainPattern():
+      break;
+
   }
 
 FastLED[0].showLeds(mainBrightness);
@@ -205,7 +213,11 @@ void camLights(const String& topic, const String& incomingMessage){
     else if (incomingMessage=="off"){
       currentPattern = PATTERN_OFF;
     }
+    else if (incomingMessage=="transgender"){
+      currentPattern = PATTERN_TRANS;
     }
+  }
+  
   else {Serial.println("oops topic/message didn't work in the led function");}
 }
 
@@ -236,4 +248,19 @@ void soph_rainbow() {     //Rainbow Pattern
   oneMore++; 
 }
 
+void transPattern(){
+
+ for (uint8_t y = 0; y < IMG_HEIGHT; y++) {
+    for (uint8_t x = 0; x < IMG_WIDTH; x++) {
+
+      uint16_t i = XY(x, y);
+
+      uint8_t r = IMAGE[y][x][0];
+      uint8_t g = IMAGE[y][x][1];
+      uint8_t b = IMAGE[y][x][2];
+
+      strip2[i] = CRGB(r, g, b);
+    }
+  }
+}
 
