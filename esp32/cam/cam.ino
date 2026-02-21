@@ -4,10 +4,7 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-#include "transimage.h"
-#include "heart.h"
-#include "lips.h"
-#include "mrmittens.h"
+#include "bubbles.h"
 
 //ESP32 runs two led strips, using OTA, and mqtt subscriber. The message gets
 //transcribed into a string, which gets delegated to its right purpose. It subscribes to brightness and pattern, 
@@ -114,7 +111,7 @@ void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(strip1, NUM_LEDS); //[0]  these two lines of code have to be in order for brightness to work properly
   FastLED.addLeds<WS2812B, DATA_PIN_2, GRB>(strip2, NUM_LEDS); //[1]
   
-  transPattern(); //start initial pattern that doesn't depend on MQTT connectiveness 
+  heartAnim(); //start initial pattern that doesn't depend on MQTT connectiveness 
   FastLED.setBrightness(10);
   FastLED.show();
 
@@ -175,7 +172,7 @@ void loop() {
       break;
 
     case PATTERN_TRANS:
-      transPattern();
+      heartAnim();
       break;
 
   }
@@ -250,23 +247,41 @@ void soph_rainbow() {     //Rainbow Pattern
   oneMore++; 
 }
 
+// serpentine mapping (your original)
 uint16_t XY(uint8_t x, uint8_t y) {
-    if (y % 2 == 0) {
-        return y * IMG_WIDTH + x;
-    } else {
-        return y * IMG_WIDTH + (IMG_WIDTH - 1 - x);
-    }
+  if (y % 2 == 0) {
+    return y * IMG_WIDTH + x;
+  } else {
+    return y * IMG_WIDTH + (IMG_WIDTH - 1 - x);
+  }
 }
 
-void transPattern(){
 
- for (uint8_t y = 0; y < IMG_HEIGHT; y++) {
+#define HEART_W IMG_WIDTH
+#define HEART_H IMG_HEIGHT
+#define HEART_FRAMES NUM_FRAMES
+#define HEART_FRAME_MS 160   // adjust speed
+
+void drawHeartFrame(uint8_t frame) {
+  for (uint8_t y = 0; y < IMG_HEIGHT; y++) {
     for (uint8_t x = 0; x < IMG_WIDTH; x++) {
 
-      uint16_t i = XY(x, y);
+      strip2[XY(x, y)] = HEART_FRAMESS[frame][y][x];
 
-      strip2[i] = IMAGEMITTENS[y][x];
     }
   }
 }
 
+void heartAnim() {
+  static uint32_t lastMs = 0;
+  static uint8_t frame = 0;
+
+  uint32_t now = millis();
+  if (now - lastMs < HEART_FRAME_MS) return;
+  lastMs = now;
+
+  drawHeartFrame(frame);
+ 
+
+  frame = (frame + 1) % NUM_FRAMES;
+}
